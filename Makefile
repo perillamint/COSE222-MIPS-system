@@ -15,7 +15,7 @@ SIMCOMPFLAGS :=
 SIMFLAGS := -v
 
 RAWSRCS = $(wildcard *.v) $(wildcard */*.v)
-SRCS = $(filter-out Altera_ $(RAWSRCS))
+SRCS = $(filter-out Altera_%, $(RAWSRCS))
 TBSRCS = $(filter %_tb.v, $(SRCS))
 MODSRCS = $(filter-out %_tb.v %_incl.v, $(SRCS))
 VVPS = $(patsubst %.v,%.vvp,$(TBSRCS))
@@ -38,7 +38,7 @@ prog: ${PROJ}.svf
 	echo @00000000 > $@
 	cat $< | tail -n +4 | sed 's/0x//g' | sed 's/[}; ]//g' | sed 's/,/ /g' >> $@
 
-$(JSONS): %.json: $(MODSRCS) image.hex image2.hex
+$(JSONS): %.json: $(MODSRCS)
 	yosys -p "synth_ecp5 ${SYNTHFLAGS} -top ${TOPMODULE} -json $@" $(filter-out %.hex,$^)
 
 %_out.config: %.json
