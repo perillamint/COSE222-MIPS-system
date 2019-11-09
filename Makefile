@@ -7,7 +7,7 @@ SIMCOMPILER := iverilog
 SIMULATOR := vvp
 VIEWER := gtkwave
 
-TOPMODULE := top
+TOPMODULE := LFE5UM5G_85F_EVN
 
 #SYNTHFLAGS := -abc2 -noccu2 -nobram -nomux
 SYNTHFLAGS := -abc2
