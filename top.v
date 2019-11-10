@@ -72,7 +72,7 @@ module LFE5UM5G_85F_EVN (
           end
      end // always @ (negedge clk, negedge rst_n)
 
-   always @ (posedge CLOCK_50, negedge rst_n)
+   always @ (posedge fb_clk, negedge rst_n)
      begin
         if (!rst_n)
           begin
