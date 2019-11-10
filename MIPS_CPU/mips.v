@@ -18,7 +18,7 @@ module mips(input         clk, reset,
 
   wire        signext, shiftl16, memtoreg, branch;
   wire        pcsrc, zero;
-  wire        alusrc, regdst, regwrite, jump;
+  wire        alusrc, regdst, regwrite, nez, jump;
   wire [2:0]  alucontrol;
 
   // Instantiate Controller
@@ -35,6 +35,7 @@ module mips(input         clk, reset,
 		.regdst     (regdst),
 		.regwrite   (regwrite),
 		.jump       (jump),
+    .nez        (nez),
 		.alucontrol (alucontrol));
 
   // Instantiate Datapath
@@ -49,6 +50,7 @@ module mips(input         clk, reset,
     .regdst     (regdst),
     .regwrite   (regwrite),
     .jump       (jump),
+    .nez        (nez),
     .alucontrol (alucontrol),
     .zero       (zero),
     .pc         (pc),
@@ -67,6 +69,7 @@ module controller(input  [5:0] op, funct,
                   output       pcsrc, alusrc,
                   output       regdst, regwrite,
                   output       jump,
+                  output       nez,
                   output [2:0] alucontrol);
 
   wire [1:0] aluop;
@@ -83,11 +86,12 @@ module controller(input  [5:0] op, funct,
     .regdst   (regdst),
     .regwrite (regwrite),
     .jump     (jump),
+    .nez      (nez),
     .aluop    (aluop));
 
-  aludec ad( 
+  aludec ad(
     .funct      (funct),
-    .aluop      (aluop), 
+    .aluop      (aluop),
     .alucontrol (alucontrol));
 
   assign pcsrc = branch & zero;
@@ -102,26 +106,29 @@ module maindec(input  [5:0] op,
                output       branch, alusrc,
                output       regdst, regwrite,
                output       jump,
+               output       nez,
                output [1:0] aluop);
 
-  reg [10:0] controls;
+  reg [11:0] controls;
 
   assign {signext, shiftl16, regwrite, regdst, alusrc, branch, memwrite,
-          memtoreg, jump, aluop} = controls;
+          memtoreg, jump, nez, aluop} = controls;
 
   always @(*)
     case(op)
-      6'b000000: controls <= #`mydelay 11'b00110000011; // Rtype
-      6'b100011: controls <= #`mydelay 11'b10101001000; // LW
-      6'b101011: controls <= #`mydelay 11'b10001010000; // SW
-      6'b000100: controls <= #`mydelay 11'b10000100001; // BEQ
-      //6'b000101: controls <= #`mydelay 11'b10000100001; // BNEZ
-      6'b001000, 
-      6'b001001: controls <= #`mydelay 11'b10101000000; // ADDI, ADDIU: only difference is exception
-      6'b001101: controls <= #`mydelay 11'b00101000010; // ORI
-      6'b001111: controls <= #`mydelay 11'b01101000000; // LUI
-      6'b000010: controls <= #`mydelay 11'b00000000100; // J
-      default:   controls <= #`mydelay 11'bxxxxxxxxxxx; // ???
+      6'b000000: controls <= #`mydelay 12'b001100000011; // Rtype
+      6'b100011: controls <= #`mydelay 12'b101010010000; // LW
+      6'b101011: controls <= #`mydelay 12'b100010100000; // SW
+      6'b000100: controls <= #`mydelay 12'b100001000001; // BEQ
+      6'b000101: controls <= #`mydelay 12'b100001000101; // BNE
+      6'b001000,
+      6'b001001: controls <= #`mydelay 12'b101010000000; // ADDI, ADDIU: only difference is exception
+      6'b001010,
+      //6'b001011: controls <= #`mydelay 12'b101100000000; // SLTI, SLTIU
+      6'b001101: controls <= #`mydelay 12'b001010000010; // ORI
+      6'b001111: controls <= #`mydelay 12'b011010000000; // LUI
+      6'b000010: controls <= #`mydelay 12'b000000001000; // J
+      default:   controls <= #`mydelay 12'bxxxxxxxxxxxx; // ???
     endcase
 
 endmodule
@@ -142,7 +149,8 @@ module aludec(input      [5:0] funct,
           6'b100011: alucontrol <= #`mydelay 3'b110; // SUB, SUBU: only difference is exception
           6'b100100: alucontrol <= #`mydelay 3'b000; // AND
           6'b100101: alucontrol <= #`mydelay 3'b001; // OR
-          6'b101010: alucontrol <= #`mydelay 3'b111; // SLT
+          6'b101010,
+          6'b101011: alucontrol <= #`mydelay 3'b111; // SLT, SLTU
           default:   alucontrol <= #`mydelay 3'bxxx; // ???
         endcase
     endcase
@@ -155,12 +163,13 @@ module datapath(input         clk, reset,
                 input         memtoreg, pcsrc,
                 input         alusrc, regdst,
                 input         regwrite, jump,
-                input  [2:0]  alucontrol,
+                input         nez,
+                input [2:0]   alucontrol,
                 output        zero,
                 output [31:0] pc,
-                input  [31:0] instr,
+                input [31:0]  instr,
                 output [31:0] aluout, writedata,
-                input  [31:0] readdata);
+                input [31:0]  readdata);
 
   wire [4:0]  writereg;
   wire [31:0] pcnext, pcnextbr, pcplus4, pcbranch;
@@ -247,6 +256,7 @@ module datapath(input         clk, reset,
     .b       (srcb),
     .alucont (alucontrol),
     .result  (aluout),
+    .nez     (nez),
     .zero    (zero));
     
 endmodule

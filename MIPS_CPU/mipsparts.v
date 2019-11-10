@@ -193,7 +193,8 @@ endmodule
 
 
 module alu(input      [31:0] a, b, 
-           input      [2:0]  alucont, 
+           input [2:0]       alucont,
+           input             nez,
            output reg [31:0] result,
            output            zero);
 
@@ -225,7 +226,7 @@ module alu(input      [31:0] a, b,
       2'b11: result <= #`mydelay slt;
     endcase
 
-  assign #`mydelay zero = (result == 32'b0);
+  assign #`mydelay zero = nez ? (result != 32'b0) : (result == 32'b0);
 
 endmodule
 
