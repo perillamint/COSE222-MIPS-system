@@ -64,8 +64,7 @@ module MIPS_System(
 			 .c0       (clk0), 
 			 .c1       (clk90), 
 			 .c2       (clk180), 
-			 .locked   (locked)); 
-
+			 .locked   (locked));
 
   always @(*)
   begin

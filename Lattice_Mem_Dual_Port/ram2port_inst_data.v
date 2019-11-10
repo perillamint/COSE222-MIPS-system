@@ -21,7 +21,7 @@ module ram2port_inst_data (
     q_a,
     q_b);
 
-   parameter ramsz = 1024 * 4;
+   parameter ramsz = 1024 * 8; // 8k RAM
    // Hand wired Altera-compatible RAM implementation
    // Yosys will optimize this logic into bram... maybe...
 
@@ -42,17 +42,29 @@ module ram2port_inst_data (
 
    reg [31:0]         ram [0:ramsz / 4];
 
-   //initial $readmemh("image.hex", ram);
+   initial $readmemh("rom.hex", ram);
 
    always @ (posedge clock_a)
      begin
-        if (wren_a && enable_a) ram[address_a] <= data_a;
-        if (enable_a) q_a <= ram[address_a];
+        if (wren_a & enable_a)
+          begin
+             ram[address_a] <= data_a;
+          end
+        if (enable_a)
+          begin
+             q_a <= ram[address_a];
+          end
      end
 
    always @ (posedge clock_b)
      begin
-        if (wren_b && enable_b) ram[address_b] <= data_b;
-        if (enable_b) q_b <= ram[address_b];
+        if (wren_b & enable_b)
+          begin
+             ram[address_b] <= data_b;
+          end
+        if (enable_b)
+          begin
+             q_b <= ram[address_b];
+          end
      end
 endmodule

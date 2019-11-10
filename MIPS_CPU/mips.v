@@ -115,6 +115,7 @@ module maindec(input  [5:0] op,
       6'b100011: controls <= #`mydelay 11'b10101001000; // LW
       6'b101011: controls <= #`mydelay 11'b10001010000; // SW
       6'b000100: controls <= #`mydelay 11'b10000100001; // BEQ
+      //6'b000101: controls <= #`mydelay 11'b10000100001; // BNEZ
       6'b001000, 
       6'b001001: controls <= #`mydelay 11'b10101000000; // ADDI, ADDIU: only difference is exception
       6'b001101: controls <= #`mydelay 11'b00101000010; // ORI

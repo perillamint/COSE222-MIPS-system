@@ -23,6 +23,7 @@ VCDS = $(patsubst %_tb.v,%_wave.vcd,$(TBSRCS))
 
 BITS := $(PROJ).bit
 RPTS := $(patsubst %.bit,%.rpt,$(BITS))
+DOTS := $(PROJ).dot
 JSONS := $(patsubst %.bit,%.json,$(BITS))
 SVFS := $(patsubst %.bit,%.svf,$(BITS))
 
@@ -38,8 +39,11 @@ prog: ${PROJ}.svf
 	echo @00000000 > $@
 	cat $< | tail -n +4 | sed 's/0x//g' | sed 's/[}; ]//g' | sed 's/,/ /g' >> $@
 
-$(JSONS): %.json: $(MODSRCS)
+$(JSONS): %.json: $(MODSRCS) rom.hex
 	yosys -p "synth_ecp5 ${SYNTHFLAGS} -top ${TOPMODULE} -json $@" $(filter-out %.hex,$^)
+
+$(DOTS):%.dot: $(MODSRCS) rom.hex
+	yosys -p "read_verilog $(filter-out %.hex,$^); hierarchy -check; proc; opt; fsm; opt; memory; opt extract -map top.v"
 
 %_out.config: %.json
 	nextpnr-ecp5 --json $< --textcfg $@ --${DEVICE}k --package ${PACKAGE} --lpf ${PIN_DEF}
@@ -52,7 +56,7 @@ ${PROJ}.svf : ${PROJ}.bit
 %.vvp: %.v $(MODSRCS)
 	$(SIMCOMPILER) $(SIMCOMPFLAGS) $^ -o $@
 
-%_wave.vcd: %_tb.vvp fb.hex
+%_wave.vcd: %_tb.vvp
 	$(SIMULATOR) $(SIMFLAGS) $<
 
 clean:

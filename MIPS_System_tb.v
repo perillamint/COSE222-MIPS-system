@@ -22,18 +22,19 @@ module MIPS_System_tb();
         .LEDG      (ledg));
 
   // Reset
-  initial
-  begin
-    reset <= 0; 
-		#530; 
-		reset <= 1;
-  end
+   initial
+     begin
+        $dumpfile("MIPS_System_wave.vcd");
+        $dumpvars(0, MIPS_System_dut);
 
-  // Clock 
-  initial
-  begin
-    clk <= 0; 
-		forever #10 clk <= ~clk;
-  end  
-      
+        reset <= 0;
+        clk <= 0;
+		    #530;
+		    reset <= 1;
+        #10000000;
+        $finish;
+     end
+
+   // Clock
+	 always #10 clk <= ~clk;
 endmodule

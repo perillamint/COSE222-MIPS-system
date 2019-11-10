@@ -17,6 +17,51 @@ module ALTPLL_clkgen (
 	 output	  c2;
 	 output	  locked;
 
+`ifdef __ICARUS__
+ `define NOTECP5
+`endif
+
+`ifdef FORMAL
+ `define NOTECP5
+`endif
+
+`ifdef NOTECP5
+   reg [3:0] clkdiv;
+   reg       c0;
+   reg       c1;
+   reg       c2;
+
+   initial c0 = 0;
+   initial c1 = 0;
+   initial c2 = 0;
+   initial clkdiv = 0;
+
+   assign locked = 1;
+
+   always @ (posedge inclk0)
+     begin
+        if (clkdiv > 4'd8)
+          begin
+             clkdiv <= 0;
+          end
+        else
+          begin
+             clkdiv <= clkdiv + 1;
+             if (clkdiv == 4'd4)
+               begin
+                  c2 <= ~c2;
+               end
+             if (clkdiv == 4'd2)
+               begin
+                  c1 <= ~c1;
+               end
+             if (clkdiv == 4'd0)
+               begin
+                  c0 <= ~c0;
+               end
+          end // else: !if(clkdiv > 4'd8)
+     end
+`else
    (* FREQUENCY_PIN_CLKI="50" *)
    (* FREQUENCY_PIN_CLKOP="10" *)
    (* FREQUENCY_PIN_CLKOS="10" *)
@@ -64,5 +109,6 @@ module ALTPLL_clkgen (
                       .ENCLKOP(1'b0),
                       .LOCK(locked)
                       );
+`endif // !`ifdef NOTECP5
 
 endmodule
