@@ -19,7 +19,7 @@ module LFE5UM5G_85F_EVN (
 
    wire [2:0]    BUTTON;
    wire [9:0]    SW;
-   wire [6:0]    HEX_D[1:0];
+   wire [6:0]    HEX_D[3:0];
    wire [9:0]    LEDG;
 
    assign SW[7:0] = switch;
