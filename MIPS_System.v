@@ -16,7 +16,7 @@
 //  SW: Down (towards the edge of the board)  --> "0"
 //      Up --> "1"
 //
-`timescale 1ns/1ps
+`include "simparams.vh"
 
 module MIPS_System(
   input         CLOCK_50,

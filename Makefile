@@ -16,7 +16,7 @@ SYNTHFLAGS := -abc2
 SIMCOMPFLAGS :=
 SIMFLAGS := -v
 
-RAWSRCS = $(wildcard *.v) $(wildcard */*.v)
+RAWSRCS = $(wildcard *.v) $(wildcard */*.v) $(wildcard */*/*.v)
 SRCS = $(filter-out Altera_%, $(RAWSRCS))
 TBSRCS = $(filter %_tb.v, $(SRCS))
 MODSRCS = $(filter-out %_tb.v %_incl.v, $(SRCS))
@@ -62,6 +62,6 @@ ${PROJ}.svf : ${PROJ}.bit
 	$(SIMULATOR) $(SIMFLAGS) $<
 
 clean:
-	rm -f *.svf *.bit *.config *.json *.vvp *.vcd *.rom *.hex xbm2bin
+	rm -f *.svf *.bit *.config *.json *.vvp *.vcd *.rom xbm2bin
 
 #.PHONY: prog clean
