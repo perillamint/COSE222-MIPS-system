@@ -15,9 +15,12 @@ module adder_32bit (input  [31:0] a, b,
 
 	assign N = sum[31];
 	assign Z = (sum == 32'b0);
-	assign C = ctmp[31];
-	assign V = ctmp[31] ^ ctmp[30];
+	//assign C = ctmp[31];
+	//assign V = ctmp[31] ^ ctmp[30];
 
+  assign {C, sum} = a + b + cin;
+  assign V = a[31] != b[31] ? 0 : b[31] == sum[31] ? 0 : 1;
+/*
 	adder_1bit bit31 (.a(a[31]), .b(b[31]), .cin(ctmp[30]), .sum(sum[31]), .cout(ctmp[31]));
 	adder_1bit bit30 (.a(a[30]), .b(b[30]), .cin(ctmp[29]), .sum(sum[30]), .cout(ctmp[30]));
 	adder_1bit bit29 (.a(a[29]), .b(b[29]), .cin(ctmp[28]), .sum(sum[29]), .cout(ctmp[29]));
@@ -50,7 +53,7 @@ module adder_32bit (input  [31:0] a, b,
 	adder_1bit bit2  (.a(a[2]),  .b(b[2]),  .cin(ctmp[1]),  .sum(sum[2]),  .cout(ctmp[2]));
 	adder_1bit bit1  (.a(a[1]),  .b(b[1]),  .cin(ctmp[0]),  .sum(sum[1]),  .cout(ctmp[1]));
 	adder_1bit bit0  (.a(a[0]),  .b(b[0]),  .cin(cin),      .sum(sum[0]),  .cout(ctmp[0]));
-
+*/
 endmodule
 
 
