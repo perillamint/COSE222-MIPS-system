@@ -1,7 +1,9 @@
-PROJ=ecp5_lcd
+PROJ=cose222-ecp5-mips
 PIN_DEF := ecp5evn.lpf
 DEVICE := um5g-85
 PACKAGE := CABGA381
+
+TARGET_FREQ := 30
 
 SIMCOMPILER := iverilog
 SIMULATOR := vvp
@@ -46,7 +48,7 @@ $(DOTS):%.dot: $(MODSRCS) rom.hex
 	yosys -p "read_verilog $(filter-out %.hex,$^); hierarchy -check; proc; opt; fsm; opt; memory; opt extract -map top.v"
 
 %_out.config: %.json
-	nextpnr-ecp5 --json $< --textcfg $@ --${DEVICE}k --package ${PACKAGE} --lpf ${PIN_DEF}
+	nextpnr-ecp5 --json $< --textcfg $@ --${DEVICE}k --package ${PACKAGE} --lpf ${PIN_DEF} --freq ${TARGET_FREQ}
 
 %.bit: %_out.config
 	ecppack --svf ${PROJ}.svf $< $@
