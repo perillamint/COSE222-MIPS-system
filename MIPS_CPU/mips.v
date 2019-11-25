@@ -22,14 +22,13 @@ module mips(input         clk, reset,
 
   // Instantiate Controller
   controller c(
-    .op         (instr[31:26]), 
-		.funct      (instr[5:0]), 
-		.zero       (zero),
+    .op         (instr[31:26]),
+		.funct      (instr[5:0]),
 		.signext    (signext),
 		.shiftl16   (shiftl16),
 		.memtoreg   (memtoreg),
 		.memwrite   (memwrite),
-		.pcsrc      (pcsrc),
+    .branch     (branch),
 		.alusrc     (alusrc),
 		.regdst     (regdst),
 		.regwrite   (regwrite),
@@ -38,6 +37,8 @@ module mips(input         clk, reset,
     .link       (link),
     .jumptoreg  (jumptoreg),
 		.alucontrol (alucontrol));
+
+   assign pcsrc = branch & zero;
 
   // Instantiate Datapath
   datapath dp(
@@ -58,7 +59,7 @@ module mips(input         clk, reset,
     .zero       (zero),
     .pc         (pc),
     .instr      (instr),
-    .aluout     (memaddr), 
+    .aluout     (memaddr),
     .writedata  (memwritedata),
     .readdata   (memreaddata));
 
