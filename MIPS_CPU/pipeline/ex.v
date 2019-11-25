@@ -8,6 +8,8 @@ module pipeline_ex(input clk, reset,
                    input         jump,
                    input         alusrc,
                    input         nez,
+                   input         regdst,
+                   input         link,
                    input [31:0]  regdataa,
                    input [31:0]  regdatab,
                    input [31:0]  instr,
@@ -16,6 +18,7 @@ module pipeline_ex(input clk, reset,
                    input [1:0]   aluop,
                    input [2:0]   alucontrol,
                    output        zero,
+                   output [4:0]  writereg,
                    output [31:0] pcnext, // Go back to IF
                    output [31:0] aluout,
                    output [31:0] memaddr,
@@ -24,6 +27,7 @@ module pipeline_ex(input clk, reset,
    wire [31:0]                   signimm, signimmsh, shiftedimm;
    wire [31:0]                   pcnext, pcbranch, jraddr;
    wire [31:0]                   srcb;
+   wire [4:0]                    instrwritereg;
 
    assign memwritedata = srcb;
 
@@ -48,6 +52,17 @@ module pipeline_ex(input clk, reset,
                     .d1   ({pcplus4[31:28], instr[25:0], 2'b00}),
                     .s    (jump),
                     .y    (pcnext));
+
+   // Decide register
+   mux2 #(5) wrmux(.d0  (instr[20:16]),
+                   .d1  (instr[15:11]),
+                   .s   (regdst),
+                   .y   (instrwritereg));
+
+   mux2 #(5) linkdstmux(.d0 (instrwritereg),
+                        .d1 (5'd31),
+                        .s  (link),
+                        .y  (writereg));
 
    // ALU stuff
    aludec ad(.funct      (funct),
