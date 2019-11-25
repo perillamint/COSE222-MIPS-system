@@ -91,38 +91,45 @@ module datapath(input         clk, reset,
   wire        shift;
 
   // next PC logic
+   // IF stage
   flopr #(32) pcreg(
     .clk   (clk),
     .reset (reset),
     .d     (pcnext),
     .q     (pc));
 
+   // IF stage
   adder pcadd1(
     .a (pc),
     .b (32'b100),
     .y (pcplus4));
 
+   // EX stage
   sl2 immsh(
     .a (signimm),
     .y (signimmsh));
 
+   //EX stage
   adder pcadd2(
     .a (pcplus4),
     .b (signimmsh),
     .y (pcbranch));
 
+   // IF stage
   mux2 #(32) pcbrmux(
     .d0  (pcplus4),
     .d1  (pcbranch),
     .s   (pcsrc),
     .y   (pcnextbr));
 
+   // EX stage
   mux2 #(32) jrmux(
     .d0  (pcnextbr),
     .d1  (srca),
     .s   (jumptoreg),
     .y   (jraddr));
 
+   // EX stage
   mux2 #(32) pcmux(
     .d0   (jraddr),
     .d1   ({pcplus4[31:28], instr[25:0], 2'b00}),
@@ -130,6 +137,7 @@ module datapath(input         clk, reset,
     .y    (pcnext));
 
   // register file logic
+   // ID stage
   regfile rf(
     .clk     (clk),
     .we      (regwrite),
@@ -140,6 +148,7 @@ module datapath(input         clk, reset,
     .rd1     (srca),
     .rd2     (writedata));
 
+   // EX stage
   mux2 #(5) wrmux(
     .d0  (instr[20:16]),
     .d1  (instr[15:11]),
@@ -158,23 +167,27 @@ module datapath(input         clk, reset,
     .s  (link),
     .y  (result));
 
+   // ID stage
   sign_zero_ext sze(
     .a       (instr[15:0]),
     .signext (signext),
     .y       (signimm[31:0]));
 
+   // EX stage
   shift_left_16 sl16(
     .a         (signimm[31:0]),
     .shiftl16  (shiftl16),
     .y         (shiftedimm[31:0]));
 
   // ALU logic
+   // EX stage
   mux2 #(32) srcbmux(
     .d0 (writedata),
     .d1 (shiftedimm[31:0]),
     .s  (alusrc),
     .y  (srcb));
 
+   // EX stage
   alu alu(
     .a       (srca),
     .b       (srcb),
