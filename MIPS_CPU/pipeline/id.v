@@ -18,16 +18,17 @@ module pipeline_id(input         clk, reset,
                    output        link, // Signal to EX
                    output        nez, // Signal to EX
                    output        jumptoreg, // Signal to EX
+                   output        shiftl16, // Signal to EX
                    output [5:0]  funct, // Signal to EX
                    output [4:0]  rt,
                    output [4:0]  rd,
                    output [1:0]  aluop,
-                   output [31:0] imm,
-                   output [31:0] alusrca,
-                   output [31:0] alusrcb,
+                   output [31:0] signimm,
+                   output [31:0] regdataa,
+                   output [31:0] regdatab,
                    output [2:0]  alucontrol);
 
-   wire [31:0]                   signimm;
+   wire                          signext;
 
    assign rt = instr[20:16];
    assign rd = instr[15:11];
@@ -56,14 +57,10 @@ module pipeline_id(input         clk, reset,
               .wd      (writedata),
               .ra1     (instr[25:21]),
               .ra2     (instr[20:16]),
-              .rd1     (alusrca),
-              .rd2     (alusrcb));
+              .rd1     (regdataa),
+              .rd2     (regdatab));
 
    sign_zero_ext sze(.a       (instr[15:0]),
                      .signext (signext),
                      .y       (signimm[31:0]));
-
-   shift_left_16 sl16(.a         (signimm[31:0]),
-                      .shiftl16  (shiftl16),
-                      .y         (imm[31:0]));
 endmodule // pipeline_id
