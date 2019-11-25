@@ -5,7 +5,7 @@
 module pipeline_if(input clk, reset,
                    input         pcsrc, // To branch or to not branch that is the question.
                    input         hazard,
-                   input  [31:0] offset,
+                   input [31:0]  offset,
                    output [31:0] pc);
 
    wire [31:0]           pcplus4, pcnext;

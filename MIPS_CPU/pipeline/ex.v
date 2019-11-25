@@ -15,8 +15,8 @@ module pipeline_ex(input clk, reset,
                    input [5:0]   funct,
                    input [1:0]   aluop,
                    input [2:0]   alucontrol,
-                   output [31:0] pcnext, // Go back to IF
                    output        zero,
+                   output [31:0] pcnext, // Go back to IF
                    output [31:0] aluout,
                    output [31:0] memaddr,
                    output [31:0] memwritedata);
