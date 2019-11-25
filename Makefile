@@ -13,7 +13,7 @@ TOPMODULE := LFE5UM5G_85F_EVN
 
 #SYNTHFLAGS := -abc2 -noccu2 -nobram -nomux
 SYNTHFLAGS := -abc2
-SIMCOMPFLAGS :=
+SIMCOMPFLAGS := -Wimplicit -Wportbind -Wselect-range -Winfloop
 SIMFLAGS := -v
 
 RAWSRCS = $(wildcard *.v) $(wildcard */*.v) $(wildcard */*/*.v)
