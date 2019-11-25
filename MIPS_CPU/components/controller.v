@@ -1,7 +1,6 @@
 `include "simparams.vh"
 
 module controller(input  [5:0] op, funct,
-                  input        zero,
                   output       signext,
                   output       shiftl16,
                   output       memtoreg, memwrite,
