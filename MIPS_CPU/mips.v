@@ -35,6 +35,7 @@ module mips(input         clk, reset,
 
    pipe_if2id if2id(.clk(clk),
                     .reset(reset),
+                    .flush(1'b0),
                     .if_pcplus4(if_pcplus4),
                     .if_instr(if_instr),
                     .id_pcplus4(id_pcplus4),

@@ -7,11 +7,29 @@ module pipe_if2id(input clk, reset,
              output [31:0] id_pcplus4,
              output [31:0] id_instr);
 
-   reg [31:0]              pcplus4;
-   reg [31:0]              instr;
+   reg [31:0]              id_pcplus4;
+   reg [31:0]              id_instr;
 
    // Dummy if2id
-   assign id_pcplus4 = if_pcplus4;
-   assign id_instr = if_instr;
+   always @(posedge clk, posedge reset)
+     begin
+        if (reset)
+          begin
+             id_pcplus4 <= 0;
+             id_instr <= 0;
+          end
+        else
+          begin
+             id_pcplus4 <= if_pcplus4;
+             if (flush)
+               begin
+                  id_instr <= 32'h00000000; // Inject NOP bubble
+               end
+             else
+               begin
+                  id_instr <= if_instr;
+               end
+          end
+     end
 
 endmodule // pipe_if2id
