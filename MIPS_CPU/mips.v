@@ -15,18 +15,30 @@ module mips(input         clk, reset,
             output [31:0] memwritedata,
             input [31:0]  memreaddata);
 
-   wire [31:0]            pcplus4;
+   wire [31:0]            if_pcplus4;
+   wire [31:0]            if_instr;
    wire                   pcsrc;
    wire [31:0]            pcnext;
-   // pc omitted
+
+   assign if_instr = instr;
 
    pipeline_if ifstage(.clk(clk),
                        .reset(reset),
                        .pcsrc(pcsrc),
                        .hazard(1'b0),
                        .branchaddr(pcnext),
-                       .pcplus4(pcplus4),
+                       .pcplus4(if_pcplus4),
                        .pc(pc));
+
+   wire [31:0]            id_pcplus4;
+   wire [31:0]            id_instr;
+
+   pipe_if2id if2id(.clk(clk),
+                    .reset(reset),
+                    .if_pcplus4(if_pcplus4),
+                    .if_instr(if_instr),
+                    .id_pcplus4(id_pcplus4),
+                    .id_instr(id_instr));
 
    // Signal to EX
    wire                   shiftl16;
@@ -58,8 +70,7 @@ module mips(input         clk, reset,
    wire                   writeen;
 
    pipeline_id idstage(.clk(clk),
-                       .pc(pc),
-                       .instr(instr),
+                       .instr(id_instr),
                        .writeen(writeen),
                        .writedata(regwritedata),
                        .writereg(writereg),
@@ -100,8 +111,8 @@ module mips(input         clk, reset,
                        .link(link),
                        .regdataa(regdataa),
                        .regdatab(regdatab),
-                       .instr(instr),
-                       .pcplus4(pcplus4),
+                       .instr(id_instr),
+                       .pcplus4(id_pcplus4),
                        .signimm(signimm),
                        .funct(funct),
                        .rt(rt),
@@ -128,7 +139,7 @@ module mips(input         clk, reset,
                        .link(link),
                        .aluout(aluout),
                        .readdata(memreaddata),
-                       .pcplus4(pcplus4),
+                       .pcplus4(id_pcplus4),
                        .result(regwritedata));
 
 endmodule // mips

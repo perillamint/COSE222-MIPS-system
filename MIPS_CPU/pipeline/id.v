@@ -6,7 +6,6 @@ module pipeline_id(input         clk,
                    input         writeen, // Signal from WB
                    input [31:0]  writedata, // Signal from WB
                    input [4:0]   writereg, // Signal from WB
-                   input [31:0]  pc,
                    input [31:0]  instr,
                    output        regwrite, // Signal to WB
                    output        memtoreg, // Signal to WB
