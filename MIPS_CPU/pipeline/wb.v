@@ -2,8 +2,7 @@
 
 // Pipeline writeback stage
 
-module pipeline_wb(input clk, reset,
-                   input         memtoreg,
+module pipeline_wb(input         memtoreg,
                    input         link,
                    input [31:0]  aluout,
                    input [31:0]  readdata,

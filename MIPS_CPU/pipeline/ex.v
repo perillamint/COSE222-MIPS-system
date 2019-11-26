@@ -2,8 +2,7 @@
 
 // Pipeline execution stage
 
-module pipeline_ex(input clk, reset,
-                   input         shiftl16,
+module pipeline_ex(input         shiftl16,
                    input         jumptoreg,
                    input         jump,
                    input         alusrc,
@@ -14,22 +13,24 @@ module pipeline_ex(input clk, reset,
                    input [31:0]  regdatab,
                    input [31:0]  instr,
                    input [31:0]  pcplus4,
+                   input [31:0]  signimm,
                    input [5:0]   funct,
+                   input [4:0]   rt,
+                   input [4:0]   rd,
                    input [1:0]   aluop,
-                   input [2:0]   alucontrol,
                    output        zero,
                    output [4:0]  writereg,
                    output [31:0] pcnext, // Go back to IF
                    output [31:0] aluout,
-                   output [31:0] memaddr,
                    output [31:0] memwritedata);
 
-   wire [31:0]                   signimm, signimmsh, shiftedimm;
+   wire [31:0]                   signimmsh, shiftedimm;
    wire [31:0]                   pcnext, pcbranch, jraddr;
    wire [31:0]                   srcb;
    wire [4:0]                    instrwritereg;
+   wire [2:0]                    alucontrol;
 
-   assign memwritedata = srcb;
+   assign memwritedata = regdatab;
 
    shift_left_16 sl16(.a         (signimm[31:0]),
                       .shiftl16  (shiftl16),
@@ -54,8 +55,8 @@ module pipeline_ex(input clk, reset,
                     .y    (pcnext));
 
    // Decide register
-   mux2 #(5) wrmux(.d0  (instr[20:16]),
-                   .d1  (instr[15:11]),
+   mux2 #(5) wrmux(.d0  (rt),
+                   .d1  (rd),
                    .s   (regdst),
                    .y   (instrwritereg));
 

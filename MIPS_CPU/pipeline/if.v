@@ -2,13 +2,14 @@
 
 // Pipeline instruction fetch stage
 
-module pipeline_if(input clk, reset,
+module pipeline_if(input         clk, reset,
                    input         pcsrc, // To branch or to not branch that is the question.
                    input         hazard,
-                   input [31:0]  offset,
+                   input [31:0]  branchaddr,
+                   output [31:0] pcplus4,
                    output [31:0] pc);
 
-   wire [31:0]           pcplus4, pcnext;
+   wire [31:0]                   pcnext;
 
    flopr #(32) pcreg(.clk   (clk),
                      .reset (reset),
@@ -20,7 +21,7 @@ module pipeline_if(input clk, reset,
                 .y (pcplus4));
 
    mux2 #(32) pcsrcmux(.d0  (pcplus4),
-                       .d1  (offset),
+                       .d1  (branchaddr),
                        .s   (pcsrc),
                        .y   (pcnext));
 endmodule // pipeline_if

@@ -2,7 +2,7 @@
 
 // Instruction decoding
 
-module pipeline_id(input         clk, reset,
+module pipeline_id(input         clk,
                    input         writeen, // Signal from WB
                    input [31:0]  writedata, // Signal from WB
                    input [4:0]   writereg, // Signal from WB
@@ -29,13 +29,17 @@ module pipeline_id(input         clk, reset,
                    output [2:0]  alucontrol);
 
    wire                          signext;
+   wire [5:0]                    op;
+   wire [4:0]                    rs, rt, rd;
 
+   assign op = instr[31:26];
+   assign rs = instr[25:21];
    assign rt = instr[20:16];
    assign rd = instr[15:11];
    assign funct = instr[5:0];
 
    // Big cthulu here.
-   maindec md(.op       (instr[31:26]),
+   maindec md(.op       (op),
 		          .funct    (funct),
               .signext  (signext),
               .shiftl16 (shiftl16),
@@ -55,8 +59,8 @@ module pipeline_id(input         clk, reset,
               .we      (writeen),
               .wa      (writereg),
               .wd      (writedata),
-              .ra1     (instr[25:21]),
-              .ra2     (instr[20:16]),
+              .ra1     (rs),
+              .ra2     (rt),
               .rd1     (regdataa),
               .rd2     (regdatab));
 
