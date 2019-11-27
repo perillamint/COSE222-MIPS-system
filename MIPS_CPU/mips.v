@@ -15,18 +15,21 @@ module mips(input         clk, reset,
             output [31:0] memwritedata,
             input [31:0]  memreaddata);
 
+   wire                   hazard;
    wire [31:0]            if_pcplus4;
    wire [31:0]            if_instr;
-   wire                   mem_pcsrc;
-   wire [31:0]            mem_pcnext;
+   wire                   id_pcsrc;
+   wire [31:0]            id_pcnext;
+
+   wire                   ex_regwriteen;
 
    assign if_instr = instr;
 
    pipeline_if ifstage(.clk(clk),
                        .reset(reset),
-                       .pcsrc(mem_pcsrc),
-                       .hazard(1'b0),
-                       .branchaddr(mem_pcnext),
+                       .pcsrc(id_pcsrc),
+                       .hazard(hazard),
+                       .branchaddr(id_pcnext),
                        .pcplus4(if_pcplus4),
                        .pc(pc));
 
@@ -35,7 +38,8 @@ module mips(input         clk, reset,
 
    pipe_if2id if2id(.clk(clk),
                     .reset(reset),
-                    .flush(1'b0),
+                    .flush(id_pcsrc), // Inject bubble on branch
+                    .freeze(hazard),
                     .if_pcplus4(if_pcplus4),
                     .if_instr(if_instr),
                     .id_pcplus4(id_pcplus4),
@@ -53,9 +57,12 @@ module mips(input         clk, reset,
    wire [31:0]            id_regdatab;
    wire [31:0]            id_signimm;
    wire [5:0]             id_funct;
+   wire [4:0]             id_rs;
    wire [4:0]             id_rt;
    wire [4:0]             id_rd;
    wire [1:0]             id_aluop;
+
+   //wire                   id_pcsrc;
 
    // Signal to MEM
    wire                   id_branch;
@@ -71,10 +78,13 @@ module mips(input         clk, reset,
 
    pipeline_id idstage(.clk(clk),
                        .instr(id_instr),
+                       .pcplus4(id_pcplus4),
                        .writeen(wb_regwriteen),
                        .writedata(wb_regwritedata),
                        .writereg(wb_writereg),
                        .shiftl16(id_shiftl16),
+                       .pcsrc(id_pcsrc),
+                       .pcnext(id_pcnext),
                        .jumptoreg(id_jumptoreg),
                        .jump(id_jump),
                        .alusrc(id_alusrc),
@@ -87,6 +97,7 @@ module mips(input         clk, reset,
                        .memtoreg(id_memtoreg),
                        .signimm(id_signimm),
                        .funct(id_funct),
+                       .rs(id_rs),
                        .rt(id_rt),
                        .rd(id_rd),
                        .aluop(id_aluop),
@@ -116,10 +127,11 @@ module mips(input         clk, reset,
 
    // Signal to WB
    wire                   ex_memtoreg;
-   wire                   ex_regwriteen;
+   //wire                   ex_regwriteen;
 
    pipe_id2ex id2ex(.clk(clk),
                     .reset(reset),
+                    .hazard(hazard),
                     .id_instr(id_instr),
                     .id_pcplus4(id_pcplus4),
                     .id_shiftl16(id_shiftl16),
@@ -166,7 +178,6 @@ module mips(input         clk, reset,
    // TO WB
    wire [31:0]            ex_aluout;
    wire [31:0]            ex_memwritedata;
-   wire [31:0]            ex_pcnext;
 
    // TO ID through WB
    wire [4:0]             ex_writereg;
@@ -178,6 +189,7 @@ module mips(input         clk, reset,
                        .nez(ex_nez),
                        .regdst(ex_regdst),
                        .link(ex_link),
+                       .branch(ex_branch),
                        .regdataa(ex_regdataa),
                        .regdatab(ex_regdatab),
                        .instr(ex_instr),
@@ -186,7 +198,6 @@ module mips(input         clk, reset,
                        .funct(ex_funct),
                        .rt(ex_rt),
                        .rd(ex_rd),
-                       .pcnext(ex_pcnext),
                        .aluop(ex_aluop),
                        .zero(ex_zero),
                        .aluout(ex_aluout),
@@ -218,9 +229,8 @@ module mips(input         clk, reset,
                       .ex_regwriteen(ex_regwriteen),
                       .ex_aluout(ex_aluout),
                       .ex_memwritedata(ex_memwritedata),
-                      .ex_writereg(ex_writereg),
                       .ex_pcplus4(ex_pcplus4),
-                      .ex_pcnext(ex_pcnext),
+                      .ex_writereg(ex_writereg),
                       .mem_branch(mem_branch),
                       .mem_jump(mem_jump),
                       .mem_jumptoreg(mem_jumptoreg),
@@ -231,21 +241,12 @@ module mips(input         clk, reset,
                       .mem_regwriteen(mem_regwriteen),
                       .mem_aluout(mem_aluout),
                       .mem_memwritedata(mem_memwritedata),
-                      .mem_writereg(mem_writereg),
                       .mem_pcplus4(mem_pcplus4),
-                      .mem_pcnext(mem_pcnext));
+                      .mem_writereg(mem_writereg));
 
    assign memaddr = mem_aluout;
    assign memwritedata = mem_memwritedata;
    assign memwrite = mem_memwrite;
-
-   // readdata omitted
-
-   pipeline_mem memstage(.branch(mem_branch),
-                         .jump(mem_jump),
-                         .jumptoreg(mem_jumptoreg),
-                         .zero(mem_zero),
-                         .pcsrc(mem_pcsrc));
 
    wire                   wb_memtoreg;
    wire                   wb_link;
@@ -276,5 +277,13 @@ module mips(input         clk, reset,
                        .readdata(wb_memreaddata),
                        .pcplus4(wb_pcplus4),
                        .result(wb_regwritedata));
+
+   // HDU
+   hdu hdu(.id_rs(id_rs),
+           .id_rt(id_rt),
+           .ex_rd(ex_rd),
+           .ex_regwriteen(ex_regwriteen),
+           .ex_memtoreg(ex_memtoreg),
+           .hazard(hazard));
 
 endmodule // mips

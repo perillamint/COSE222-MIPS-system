@@ -2,6 +2,7 @@
 
 module maindec(input  [5:0] op,
                input [5:0]  funct,
+               input [31:0] instr,
                output       signext,
                output       shiftl16,
                output       memtoreg, memwrite,
@@ -22,10 +23,14 @@ module maindec(input  [5:0] op,
     case(op)
       6'b000000:
         begin
-           case (funct)
-             6'b001000: controls <= #`mydelay 14'b00000000001000; // JR
-             default:   controls <= #`mydelay 14'b00110000000011; // Rtype
-           endcase // case (funct)
+           if (instr == 32'h00000000) controls <= #`mydelay 14'b0000000000000000;
+           else
+             begin
+                case (funct)
+                  6'b001000: controls <= #`mydelay 14'b00000000001000; // JR
+                  default:   controls <= #`mydelay 14'b00110000000011; // Rtype
+                endcase // case (funct)
+             end
         end
       6'b100011: controls <= #`mydelay 14'b10101001000000; // LW
       6'b101011: controls <= #`mydelay 14'b10001010000000; // SW

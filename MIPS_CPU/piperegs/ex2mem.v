@@ -11,9 +11,8 @@ module pipe_ex2mem(input clk, reset,
                    input         ex_regwriteen,
                    input [31:0]  ex_aluout,
                    input [31:0]  ex_memwritedata,
-                   input [4:0]   ex_writereg,
                    input [31:0]  ex_pcplus4,
-                   input [31:0]  ex_pcnext,
+                   input [4:0]   ex_writereg,
                    output        mem_branch,
                    output        mem_jump,
                    output        mem_jumptoreg,
@@ -24,9 +23,8 @@ module pipe_ex2mem(input clk, reset,
                    output        mem_regwriteen,
                    output [31:0] mem_aluout,
                    output [31:0] mem_memwritedata,
-                   output [4:0]  mem_writereg,
                    output [31:0] mem_pcplus4,
-                   output [31:0] mem_pcnext);
+                   output [4:0]  mem_writereg);
 
    assign mem_branch = ex_branch;
    assign mem_jump = ex_jump;
@@ -38,8 +36,7 @@ module pipe_ex2mem(input clk, reset,
    assign mem_regwriteen = ex_regwriteen;
    assign mem_aluout = ex_aluout;
    assign mem_memwritedata = ex_memwritedata;
-   assign mem_writereg = ex_writereg;
    assign mem_pcplus4 = ex_pcplus4;
-   assign mem_pcnext = ex_pcnext;
+   assign mem_writereg = ex_writereg;
 
 endmodule // pipe_ex2mem

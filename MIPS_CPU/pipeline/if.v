@@ -10,10 +10,38 @@ module pipeline_if(input         clk, reset,
                    output [31:0] pc);
 
    wire [31:0]                   pcnext;
+   wire [31:0]                   pcnextnext;
+   wire [31:0]                   hazardmid;
+
+   reg [1:0]                     hazardflag;
+
+   always @ (posedge reset, posedge clk) begin
+      if (reset) hazardflag <= 0;
+      else
+        begin
+           if (hazard && hazardflag == 2'b00)
+             begin
+                hazardflag = 2'b11;
+             end
+           else
+             begin
+                hazardflag = {1'b0, hazardflag[1]};
+             end
+        end
+   end
+
+   flopr #(32) pcnextreg(.clk   (clk),
+                         .reset (reset),
+                         .enable(hazard & (!hazardflag[0])),
+                         .d     (pcnext),
+                         .q     (hazardmid));
+
+   assign pcnextnext = hazardflag[0] ? hazardmid : pcnext;
 
    flopr #(32) pcreg(.clk   (clk),
                      .reset (reset),
-                     .d     (pcnext),
+                     .enable(~hazard),
+                     .d     (pcnextnext),
                      .q     (pc));
 
    adder pcadd1(.a (pc),

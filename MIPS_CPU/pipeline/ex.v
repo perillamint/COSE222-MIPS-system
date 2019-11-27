@@ -9,6 +9,7 @@ module pipeline_ex(input         shiftl16,
                    input         nez,
                    input         regdst,
                    input         link,
+                   input         branch,
                    input [31:0]  regdataa,
                    input [31:0]  regdatab,
                    input [31:0]  instr,
@@ -20,11 +21,10 @@ module pipeline_ex(input         shiftl16,
                    input [1:0]   aluop,
                    output        zero,
                    output [4:0]  writereg,
-                   output [31:0] pcnext, // Go back to IF
                    output [31:0] aluout,
                    output [31:0] memwritedata);
 
-   wire [31:0]                   signimmsh, shiftedimm;
+   wire [31:0]                   shiftedimm;
    wire [31:0]                   pcnext, pcbranch, jraddr;
    wire [31:0]                   srcb;
    wire [4:0]                    instrwritereg;
@@ -35,24 +35,6 @@ module pipeline_ex(input         shiftl16,
    shift_left_16 sl16(.a         (signimm[31:0]),
                       .shiftl16  (shiftl16),
                       .y         (shiftedimm[31:0]));
-
-   // Jump/Branch logic
-   sl2 immsh(.a (signimm),
-             .y (signimmsh)); // signimm << 2
-
-   adder pcadd2(.a (pcplus4),
-                .b (signimmsh),
-                .y (pcbranch));
-
-   mux2 #(32) jrmux(.d0  (pcbranch),
-                    .d1  (regdataa),
-                    .s   (jumptoreg),
-                    .y   (jraddr));
-
-   mux2 #(32) pcmux(.d0   (jraddr),
-                    .d1   ({pcplus4[31:28], instr[25:0], 2'b00}),
-                    .s    (jump),
-                    .y    (pcnext));
 
    // Decide register
    mux2 #(5) wrmux(.d0  (rt),
@@ -81,4 +63,5 @@ module pipeline_ex(input         shiftl16,
            .result  (aluout),
            .nez     (nez),
            .zero    (zero));
+
 endmodule // pipeline_ex

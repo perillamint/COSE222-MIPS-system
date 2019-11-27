@@ -1,6 +1,7 @@
 `include "simparams.vh"
 
 module pipe_id2ex(input clk, reset,
+                  input         hazard,
                   input [31:0]  id_instr,
                   input [31:0]  id_pcplus4,
                   input         id_shiftl16,
@@ -42,25 +43,101 @@ module pipe_id2ex(input clk, reset,
                   output        ex_regwriteen,
                   output        ex_memwrite);
 
-   assign ex_instr = id_instr;
-   assign ex_pcplus4 = id_pcplus4;
-   assign ex_shiftl16 = id_shiftl16;
-   assign ex_jumptoreg = id_jumptoreg;
-   assign ex_jump = id_jump;
-   assign ex_alusrc = id_alusrc;
-   assign ex_nez = id_nez;
-   assign ex_regdst = id_regdst;
-   assign ex_link = id_link;
-   assign ex_regdataa = id_regdataa;
-   assign ex_regdatab = id_regdatab;
-   assign ex_signimm = id_signimm;
-   assign ex_funct = id_funct;
-   assign ex_rt = id_rt;
-   assign ex_rd = id_rd;
-   assign ex_aluop = id_aluop;
-   assign ex_branch = id_branch;
-   assign ex_memtoreg = id_memtoreg;
-   assign ex_regwriteen = id_regwriteen;
-   assign ex_memwrite = id_memwrite;
+   reg [31:0]                   ex_instr;
+   reg [31:0]                   ex_pcplus4;
+   reg                          ex_shiftl16;
+   reg                          ex_jumptoreg;
+   reg                          ex_jump;
+   reg                          ex_alusrc;
+   reg                          ex_nez;
+   reg                          ex_regdst;
+   reg                          ex_link;
+   reg [31:0]                   ex_regdataa;
+   reg [31:0]                   ex_regdatab;
+   reg [31:0]                   ex_signimm;
+   reg [5:0]                    ex_funct;
+   reg [4:0]                    ex_rt;
+   reg [4:0]                    ex_rd;
+   reg [1:0]                    ex_aluop;
+   reg                          ex_branch;
+   reg                          ex_memtoreg;
+   reg                          ex_regwriteen;
+   reg                          ex_memwrite;
+
+
+   always @(posedge clk, posedge reset)
+     begin
+        if (reset)
+          begin
+             ex_instr <= 0;
+             ex_pcplus4 <= 0;
+             ex_shiftl16 <= 0;
+             ex_jumptoreg <= 0;
+             ex_jump <= 0;
+             ex_alusrc <= 0;
+             ex_nez <= 0;
+             ex_regdst <= 0;
+             ex_link <= 0;
+             ex_regdataa <= 0;
+             ex_regdatab <= 0;
+             ex_signimm <= 0;
+             ex_funct <= 0;
+             ex_rt <= 0;
+             ex_rd <= 0;
+             ex_aluop <= 0;
+             ex_branch <= 0;
+             ex_memtoreg <= 0;
+             ex_regwriteen <= 0;
+             ex_memwrite <= 0;
+          end
+        else
+          begin
+             ex_pcplus4 <= id_pcplus4;
+             if (hazard && (!id_link))
+               begin
+                  ex_instr <= 0;
+                  ex_shiftl16 <= 0;
+                  ex_jumptoreg <= 0;
+                  ex_jump <= 0;
+                  ex_alusrc <= 0;
+                  ex_nez <= 0;
+                  ex_regdst <= 0;
+                  ex_link <= 0;
+                  ex_regdataa <= 0;
+                  ex_regdatab <= 0;
+                  ex_signimm <= 0;
+                  ex_funct <= 0;
+                  ex_rt <= 0;
+                  ex_rd <= 0;
+                  ex_aluop <= 0;
+                  ex_branch <= 0;
+                  ex_memtoreg <= 0;
+                  ex_regwriteen <= 0;
+                  ex_memwrite <= 0;
+               end
+             else
+               begin
+                  ex_instr <= id_instr;
+                  ex_shiftl16 <= id_shiftl16;
+                  ex_jumptoreg <= id_jumptoreg;
+                  ex_jump <= id_jump;
+                  ex_alusrc <= id_alusrc;
+                  ex_nez <= id_nez;
+                  ex_regdst <= id_regdst;
+                  ex_link <= id_link;
+                  ex_regdataa <= id_regdataa;
+                  ex_regdatab <= id_regdatab;
+                  ex_signimm <= id_signimm;
+                  ex_funct <= id_funct;
+                  ex_rt <= id_rt;
+                  ex_rd <= id_rd;
+                  ex_aluop <= id_aluop;
+                  ex_branch <= id_branch;
+                  ex_memtoreg <= id_memtoreg;
+                  ex_regwriteen <= id_regwriteen;
+                  ex_memwrite <= id_memwrite;
+               end
+          end
+     end
 endmodule // pipe_id2ex
 

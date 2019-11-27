@@ -1,11 +1,12 @@
 `include "simparams.vh"
 
 module pipe_if2id(input clk, reset,
-             input         flush,
-             input [31:0]  if_pcplus4,
-             input [31:0]  if_instr,
-             output [31:0] id_pcplus4,
-             output [31:0] id_instr);
+                  input         flush,
+                  input         freeze,
+                  input [31:0]  if_pcplus4,
+                  input [31:0]  if_instr,
+                  output [31:0] id_pcplus4,
+                  output [31:0] id_instr);
 
    reg [31:0]              id_pcplus4;
    reg [31:0]              id_instr;
@@ -27,7 +28,10 @@ module pipe_if2id(input clk, reset,
                end
              else
                begin
-                  id_instr <= if_instr;
+                  if (!freeze)
+                    begin
+                       id_instr <= if_instr;
+                    end
                end
           end
      end
